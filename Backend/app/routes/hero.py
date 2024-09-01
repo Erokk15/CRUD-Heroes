@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Query
 from models.hero import HeroInformation
 from config.db import conn
 from schemas.hero import heroEntity, heroesEntity
@@ -7,10 +7,11 @@ from bson import ObjectId
 hero = APIRouter()
 
 @hero.get("/heroes")
-def find_all_heroes():
+def find_all_heroes(limit: int = Query(10), offset: int = Query(0)):
     try:
-        heroes = heroesEntity(conn.hero_information.find())
-        return heroes
+        heroes = heroesEntity(conn.hero_information.find().skip(offset).limit(limit))
+        total_count = conn.hero_information.count_documents({})
+        return {"data": heroes, "total": total_count}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
