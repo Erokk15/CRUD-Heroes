@@ -1,17 +1,18 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class HeroInformation(BaseModel):
-    hero_id: int
-    name: str
-    eye_color: str
-    hair_color: str
-    skin_color: str
-    height: float
-    weight: float
-    race: str
-    publisher_id: int
-    gender_id: int
-    alignment_id: int
+    alignment_id: Optional[int] = None
+    eye_color: Optional[str] = None
+    gender_id: Optional[int] = None
+    hair_color: Optional[str] = None
+    height: Optional[int] = None
+    hero_id: Optional[int] = None
+    name: Optional[str] = None
+    publisher_id: Optional[int] = None
+    race: Optional[str] = None
+    skin_color: Optional[str] = None
+    weight: Optional[int] = None
     
 class GenderInformation(BaseModel):
     gender_id: int

@@ -91,4 +91,11 @@ def find_all_alignments():
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
     
-
+    
+@hero.get("/check-hero-id")
+def check_hero_id(hero_id: int):
+    try:
+        exists = conn.hero_information.count_documents({"hero_id": hero_id}) > 0
+        return {"exists": exists}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
