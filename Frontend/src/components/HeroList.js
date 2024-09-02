@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import axios from 'axios';
-import swal from 'sweetalert2';
+import Swal from 'sweetalert2';
 import { show_alert } from '../functions';
 
 
@@ -9,7 +9,6 @@ const HeroList = () => {
     const urlPublishers = 'http://localhost:8000/publishers';
     const urlGenders = 'http://localhost:8000/genders';
     const urlAlignments = 'http://localhost:8000/alignments';
-
 
     const [heroes, setHeroes] = useState([]);
     const [publishers, setPublishers] = useState([]);
@@ -34,13 +33,6 @@ const HeroList = () => {
     const [totalHeroes, setTotalHeroes] = useState(0);
     const heroesPerPage = 10;
 
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filters, setFilters] = useState({
-        race: '',
-        publisher_id: '',
-        gender_id: '',
-        alignment_id: ''
-    });
 
 
 const races = [
@@ -58,7 +50,7 @@ const races = [
         fetchPublishers();
         fetchGenders();
         fetchAlignments();
-    }, [currentPage, searchTerm, filters]);
+    }, [currentPage]);
 
 
     const fetchHeroes = async () => {
@@ -68,8 +60,6 @@ const races = [
                     limit: heroesPerPage,
                     offset: (currentPage - 1) * heroesPerPage,
                     page: currentPage,
-                    search: searchTerm,
-                    ...filters
                 }
             });
             setHeroes(response.data.data);
@@ -106,57 +96,126 @@ const races = [
         }
     };
 
-    const openModal = (op, id, name, eye_color, hair_color, skin_color, height, weight, race, publisher, gender, alignment) => {
-        setHero_Id('');
-        setName('');
-        setEye_color('');
-        setHair_color('');
-        setSkin_color('');
-        setHeight('');
-        setWeight('');
-        setRace('');
-        setPublisher_id('');
-        setGender_id('');
-        setAlignment_id('');
-        setOperation(op);
-        if(op === 1){
-            setTitle('Agregar Héroe');
+    const generateUniqueHeroId = async () => {
+        const minId = 1;
+        const maxId = 1000;
+        let newId;
+        let idExists = true;
+    
+        while (idExists) {
+            newId = Math.floor(Math.random() * (maxId - minId + 1)) + minId;
+    
+            try {
+                const response = await axios.get(`http://localhost:8000/check-hero-id`, {
+                    params: { hero_id: newId }
+                });
+                idExists = response.data.exists;
+            } catch (error) {
+                console.error('Error checking hero ID:', error);
+                idExists = false; // fallback to prevent infinite loop in case of an error
+            }
         }
-        else if(op === 2){
+    
+        return newId;
+    };
 
-            if(skin_color === null){
-                setSkin_color('N/A');
-            } else setSkin_color(skin_color);
-        
-            if(race === null){
-                setRace('N/A');
-            } else setRace(race);
-            
-
-            setTitle('Editar Héroe');
+    const openModal = async(op, id = '', name = '', eye_color = '', hair_color = '', skin_color = '', height = '', weight = '', race = '', publisher = '', gender = '', alignment = '') => {
+        if (op === 1) { // Add hero operation
+            const newHeroId = await generateUniqueHeroId();
+            setHero_Id(newHeroId);
+        } else {
             setHero_Id(id);
-            setName(name);
-            setEye_color(eye_color);
-            setHair_color(hair_color);
-            setHeight(height);
-            setWeight(weight);
-            setPublisher_id(publisher);
-            setGender_id(gender);
-            setAlignment_id(alignment);
         }
-        window.setTimeout(function(){
+
+        setName(name);
+        setEye_color(eye_color);
+        setHair_color(hair_color);
+        setSkin_color(skin_color);
+        setHeight(height);
+        setWeight(weight);
+        setRace(race);
+        setPublisher_id(publisher);
+        setGender_id(gender);
+        setAlignment_id(alignment);
+        setOperation(op);
+        setTitle(op === 1 ? 'Agregar Héroe' : 'Editar Héroe');
+    
+        window.setTimeout(() => {
             document.getElementById('name').focus();
         }, 500);
+    };
+
+    const validar = () => {
+        if (name.trim() === '') {
+            show_alert('Escribe el nombre del Héroe', 'error');
+            return;
+        }
+    
+        const parsedWeight = parseInt(weight, 10);
+        const parsedHeight = parseInt(height, 10);
+        const parsedPublisherId = parseInt(publisher_id, 10);
+        const parsedGenderId = parseInt(gender_id, 10);
+        const parsedAlignmentId = parseInt(alignment_id, 10);
+    
+        if (isNaN(parsedWeight) || isNaN(parsedHeight)) {
+            show_alert('Altura y peso deben ser números válidos', 'error');
+            return;
+        }
+    
+        const parametros = {
+            hero_id,
+            name,
+            eye_color,
+            hair_color,
+            skin_color,
+            height: parsedHeight,
+            weight: parsedWeight,
+            race,
+            publisher_id: parsedPublisherId,
+            gender_id: parsedGenderId,
+            alignment_id: parsedAlignmentId
+        };
+    
+        const metodo = operation === 1 ? 'POST' : 'PUT';
+        enviarSolicitud(parametros, hero_id, metodo);
+    };
+    
+    const enviarSolicitud = async (heroData, heroId, metodo) => {
+        try {
+            const url = metodo === 'POST' ? `http://localhost:8000/heroes` : `http://localhost:8000/heroes/${heroId}`;
+            const response = await axios({
+                method: metodo,
+                url,
+                data: heroData
+            });
+            console.log('Héroe guardado:', response.data);
+
+            Swal.fire({
+                icon: 'success',
+                title: metodo === 'POST' ? 'Héroe agregado con éxito' : 'Héroe actualizado con éxito',
+                showConfirmButton: true,
+            }).then(() => {
+                // Cerrar el modal
+                document.getElementById('btnCerrar').click();
+            });
+
+            // Actualizar la lista de héroes si es necesario
+            fetchHeroes();
+        } catch (error) {
+            if (error.response) {
+                console.error('Error response:', error.response.data);
+                show_alert(`Error: ${error.response.data.detail}`, 'error');
+            } else if (error.request) {
+                console.error('No response received:', error.request);
+                show_alert('No se recibió respuesta del servidor', 'error');
+            } else {
+                console.error('Error setting up request:', error.message);
+                show_alert(`Error en la configuración de la solicitud: ${error.message}`, 'error');
+            }
+        }
     }
 
-
-    const handleEdit = (id) => {
-        console.log(id.hero_id);
-    };
-
-    const handleDelete = async (id) => {
-        console.log(id.hero_id);
-    };
+    
 
     const totalPages = Math.ceil(totalHeroes / heroesPerPage);
 
@@ -187,22 +246,9 @@ const races = [
         return pageNumbers;
     };
 
-    const handleSearchChange = (e) => {
-        setSearchTerm(e.target.value);
-    };
 
-    const handleFilterChange = (e) => {
-        setFilters({
-            ...filters,
-            [e.target.name]: e.target.value
-        });
-    };
-
-    const handleApplyFilters = () => {
-        fetchHeroes();
-    };
-    
     return (
+
         <div className='App'>
 
             {/* Header */}
@@ -219,14 +265,12 @@ const races = [
                                         <input
                                             type="text"
                                             placeholder="Search..."
-                                            value={searchTerm}
-                                            onChange={handleSearchChange}
                                         />
-                                        <button onClick={handleApplyFilters}>Buscar</button>
+                                        
                                     </div>
                                     {/* Filtro Publisher */}
                                     <div className="col-md-2">
-                                        <select className="form-select" name="publisher_id" value={filters.publisher_id} onChange={handleFilterChange}>
+                                        <select className="form-select" name="publisher_id">
                                             <option value="">Publicadora</option>
                                             {publishers.map((publisher) => (
                                                 <option key={publisher.publisher_id} value={publisher.publisher_id}>
@@ -248,7 +292,7 @@ const races = [
                                     </div>
                                     {/* Filtro Gender */}
                                     <div className="col-md-2">
-                                        <select className="form-select" name="gender_id" value={filters.gender_id} onChange={handleFilterChange}>
+                                        <select className="form-select" name="gender_id" >
                                             <option value="">Género</option>
                                             {genders.map((gender) => (
                                                 <option key={gender.gender_id} value={gender.gender_id}>
@@ -259,7 +303,7 @@ const races = [
                                     </div>
                                     {/* Filtro Alignment */}
                                     <div className="col-md-2">
-                                        <select className="form-select" name="alignment_id" value={filters.alignment_id} onChange={handleFilterChange}>
+                                        <select className="form-select" name="alignment_id" >
                                             <option value="">Alineación</option>
                                             {alignments.map((alignment) => (
                                                 <option key={alignment.alignment_id} value={alignment.alignment_id}>
@@ -361,7 +405,6 @@ const races = [
                     <div className='modal-content'>
                         <div className='modal-header'>
                             <label className='h5'>{title}</label>
-                            <button type='button' className='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
                         </div>
                         <div className='modal-body'>
                             <input type='hidden' id='hero_id'></input>
@@ -427,12 +470,12 @@ const races = [
                                 </select>
                             </div>
                             <div className='d-grid col-6 mx-auto'>
-                                <button className='btn btn-success'>
+                                <button onClick={()=> validar()} className='btn btn-success'>
                                     <i className='fa-solid fa-floppy-disk'></i> Guardar
                                 </button>
                             </div>
                             <div className='modal-footer'>
-                                <button type='button' className='btn btn-secondary' data-bs-dismiss='modal'>Cerrar</button>
+                                <button type='button' id='btnCerrar'className='btn btn-secondary' data-bs-dismiss='modal'>Cerrar</button>
                             </div>
                         </div>
                     </div>

@@ -10,7 +10,7 @@ export function show_alert(msg, icon, foco) {
     });
 }
 
-function onfocus(foco) {
+function onfocus(foco='') {
     if (foco !== '') {
         document.gerElementById(foco).focus();
     }
