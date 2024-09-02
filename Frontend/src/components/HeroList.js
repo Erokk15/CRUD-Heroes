@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { show_alert } from '../functions';
+import withReactContent from 'sweetalert2-react-content';
 
 
 const HeroList = () => {
@@ -112,7 +113,7 @@ const races = [
                 idExists = response.data.exists;
             } catch (error) {
                 console.error('Error checking hero ID:', error);
-                idExists = false; // fallback to prevent infinite loop in case of an error
+                idExists = false; 
             }
         }
     
@@ -195,11 +196,9 @@ const races = [
                 title: metodo === 'POST' ? 'Héroe agregado con éxito' : 'Héroe actualizado con éxito',
                 showConfirmButton: true,
             }).then(() => {
-                // Cerrar el modal
                 document.getElementById('btnCerrar').click();
             });
 
-            // Actualizar la lista de héroes si es necesario
             fetchHeroes();
         } catch (error) {
             if (error.response) {
@@ -215,6 +214,25 @@ const races = [
         }
     }
 
+    const deleteHero = async (hero_id, name) => {
+        const Myswal = withReactContent(Swal);
+        
+        Myswal.fire({
+            title: '¿Estás seguro de eliminar a '+name+'?',
+            icon: 'question', text: 'No podrás revertir esta acción',
+            showCancelButton: true, confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if(result.isConfirmed){
+                setHero_Id(hero_id);
+                enviarSolicitud({}, hero_id, 'DELETE');
+
+            }
+            else {
+                show_alert('Operación cancelada', 'info');
+            }
+        })
+
+    }
     
 
     const totalPages = Math.ceil(totalHeroes / heroesPerPage);
@@ -361,7 +379,7 @@ const races = [
                                                     <i className='fa-solid fa-pencil'></i>
                                                 </button>
                                                 &nbsp;
-                                                <button className='btn btn-danger' >
+                                                <button onClick={()=> deleteHero(hero.hero_id, hero.name)} className='btn btn-danger' >
                                                     <i className='fa-solid fa-trash'></i>
                                                 </button>
                                             </td>
