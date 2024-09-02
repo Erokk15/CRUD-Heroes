@@ -15,6 +15,7 @@ const HeroList = () => {
     const [publishers, setPublishers] = useState([]);
     const [genders, setGenders] = useState([]);
     const [alignments, setAlignments] = useState([]);
+    const [races, setRaces] = useState([]);
 
     const [hero_id, setHero_Id] = useState(0);
     const [name, setName] = useState('');
@@ -34,15 +35,11 @@ const HeroList = () => {
     const [totalHeroes, setTotalHeroes] = useState(0);
     const heroesPerPage = 10;
 
-
-
-const races = [
-    'Human',
-    'Mutant',
-    'Alien',
-    'God',
-    'Cyborg'
-];
+    const [filterName, setFilterName] = useState('');
+    const [filterPublisherId, setFilterPublisherId] = useState('');
+    const [filterGenderId, setFilterGenderId] = useState('');
+    const [filterAlignmentId, setFilterAlignmentId] = useState('');
+    const [filterRace, setFilterRace] = useState('');
 
 
 
@@ -51,18 +48,25 @@ const races = [
         fetchPublishers();
         fetchGenders();
         fetchAlignments();
-    }, [currentPage]);
+        fetchRaces();
+    }, [currentPage, filterName, filterPublisherId, filterGenderId, filterAlignmentId, filterRace]);
 
 
     const fetchHeroes = async () => {
         try {
-            const response = await axios.get(urlHeroes, {
-                params: {
-                    limit: heroesPerPage,
-                    offset: (currentPage - 1) * heroesPerPage,
-                    page: currentPage,
-                }
-            });
+            const params = {
+                limit: heroesPerPage,
+                offset: (currentPage - 1) * heroesPerPage,
+                page: currentPage,
+            };
+    
+            if (filterName) params.name = filterName;
+            if (filterPublisherId) params.publisher_id = filterPublisherId;
+            if (filterGenderId) params.gender_id = filterGenderId;
+            if (filterAlignmentId) params.alignment_id = filterAlignmentId;
+            if (filterRace) params.race = filterRace;
+    
+            const response = await axios.get(urlHeroes, { params });
             setHeroes(response.data.data);
             setTotalHeroes(response.data.total);
         } catch (error) {
@@ -94,6 +98,15 @@ const races = [
             setAlignments(response.data.data);
         } catch (error) {
             console.error('Error fetching alignments:', error);
+        }
+    };
+
+    const fetchRaces = async () => {
+        try {
+            const response = await axios.get('http://localhost:8000/races');
+            setRaces(response.data.data); 
+        } catch (error) {
+            console.error("Error fetching races:", error);
         }
     };
 
@@ -283,12 +296,14 @@ const races = [
                                         <input
                                             type="text"
                                             placeholder="Search..."
+                                            value={filterName}
+                                            onChange={(e)=> setFilterName(e.target.value)}
                                         />
                                         
                                     </div>
                                     {/* Filtro Publisher */}
                                     <div className="col-md-2">
-                                        <select className="form-select" name="publisher_id">
+                                        <select className="form-select" name="publisher_id" value={filterPublisherId} onChange={(e) => setFilterPublisherId(e.target.value)}>
                                             <option value="">Publicadora</option>
                                             {publishers.map((publisher) => (
                                                 <option key={publisher.publisher_id} value={publisher.publisher_id}>
@@ -299,10 +314,10 @@ const races = [
                                     </div>
                                     {/* Filtro Race */}
                                     <div className="col-md-2">
-                                        <select className="form-select" >
+                                        <select className="form-select" name="race" value={filterRace} onChange={(e)=> setFilterRace(e.target.value)}>
                                             <option value="">Raza</option>
-                                            {races.map((race) => (
-                                                <option key={race} value={race}>
+                                            {races.map((race, index) => (
+                                                <option key={index} value={race}>
                                                     {race}
                                                 </option>
                                             ))}
@@ -310,7 +325,7 @@ const races = [
                                     </div>
                                     {/* Filtro Gender */}
                                     <div className="col-md-2">
-                                        <select className="form-select" name="gender_id" >
+                                        <select className="form-select" name="gender_id" value={filterGenderId} onChange={(e) => setFilterGenderId(e.target.value)}>
                                             <option value="">Género</option>
                                             {genders.map((gender) => (
                                                 <option key={gender.gender_id} value={gender.gender_id}>
@@ -321,7 +336,7 @@ const races = [
                                     </div>
                                     {/* Filtro Alignment */}
                                     <div className="col-md-2">
-                                        <select className="form-select" name="alignment_id" >
+                                        <select className="form-select" name="alignment_id" value={filterAlignmentId} onChange={(e)=> setFilterAlignmentId(e.target.value)}>
                                             <option value="">Alineación</option>
                                             {alignments.map((alignment) => (
                                                 <option key={alignment.alignment_id} value={alignment.alignment_id}>
