@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState,} from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { show_alert } from '../functions';
@@ -293,13 +293,18 @@ const HeroList = () => {
                             <div className="col-lg-8">
                                 <div className="row g-2 justify-content-end">
                                     <div className="col-md-3">
-                                        <input
-                                            type="text"
-                                            placeholder="Search..."
-                                            value={filterName}
-                                            onChange={(e)=> setFilterName(e.target.value)}
-                                        />
-                                        
+                                        <div className="input-group">
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                placeholder="Buscar..."
+                                                value={filterName}
+                                                onChange={(e) => setFilterName(e.target.value)}
+                                            />
+                                            <button className="btn btn-outline-secondary" type="button">
+                                            <i className="fa-solid fa-search"></i>
+                                        </button>
+                                    </div>
                                     </div>
                                     {/* Filtro Publisher */}
                                     <div className="col-md-2">
@@ -371,17 +376,17 @@ const HeroList = () => {
                                     <tr><th>#</th><th>NOMBRE</th><th>CASA PUBLICADORA</th><th>GENERO</th><th>ALTURA</th><th>PESO</th></tr>
                                 </thead>
                                 <tbody className='table-group-divider'>
-                                    {heroes.map((hero, i)=>(
+                                    {heroes.map((hero)=>(
                                         <tr key={hero.hero_id}>
                                             <td>{hero.hero_id}</td>
                                             <td>{hero.name}</td>
-                                            <td>{publishers.map((publisher, i) => {
+                                            <td>{publishers.map((publisher) => {
                                                 if(publisher.publisher_id === hero.publisher_id){
                                                     return publisher.publisher_name;
                                                 }
                                                 return null;
                                             })}</td>
-                                            <td>{genders.map((gender, i) => {
+                                            <td>{genders.map((gender) => {
                                                 if(gender.gender_id === hero.gender_id){
                                                     return gender.name;
                                                 }
