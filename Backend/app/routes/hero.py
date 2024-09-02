@@ -7,10 +7,31 @@ from bson import ObjectId
 hero = APIRouter()
 
 @hero.get("/heroes")
-def find_all_heroes(limit: int = Query(10), offset: int = Query(0)):
+def find_all_heroes(
+    limit: int = Query(10),
+    offset: int = Query(0),
+    name: str = Query(None),
+    publisher_id: int = Query(None),
+    gender_id: int = Query(None),
+    alignment_id: int = Query(None),
+    race: str = Query(None) 
+):
     try:
-        heroes = heroesEntity(conn.hero_information.find().skip(offset).limit(limit))
-        total_count = conn.hero_information.count_documents({})
+        query = {}
+        if name:
+            query["name"] = {"$regex": name, "$options": "i"}
+        if publisher_id:
+            query["publisher_id"] = publisher_id
+        if gender_id:
+            query["gender_id"] = gender_id
+        if alignment_id:
+            query["alignment_id"] = alignment_id
+        if race:
+            query["race"] = race
+
+        # Ordenar los héroes por `hero_id` en orden ascendente
+        heroes = heroesEntity(conn.hero_information.find(query).sort("hero_id", 1).skip(offset).limit(limit))
+        total_count = conn.hero_information.count_documents(query)
         return {"data": heroes, "total": total_count}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
@@ -97,5 +118,13 @@ def check_hero_id(hero_id: int):
     try:
         exists = conn.hero_information.count_documents({"hero_id": hero_id}) > 0
         return {"exists": exists}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    
+@hero.get("/races")
+def find_all_races():
+    try:
+        races = conn.hero_information.distinct("race")
+        return {"data": races}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
