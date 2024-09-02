@@ -12,3 +12,15 @@ class HeroInformation(BaseModel):
     publisher_id: int
     gender_id: int
     alignment_id: int
+    
+class GenderInformation(BaseModel):
+    gender_id: int
+    name: str
+    
+class PublisherInformation(BaseModel):
+    publisher_id: int
+    name: str
+    
+class AlignmentInformation(BaseModel):
+    alignment_id: int
+    name: str
