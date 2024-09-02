@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Query
 from models.hero import HeroInformation
 from config.db import conn
-from schemas.hero import heroEntity, heroesEntity
+from schemas.hero import heroEntity, heroesEntity, genderEntity, gendersEntity, publisherEntity, publishersEntity, alignmentEntity, alignmentsEntity
 from bson import ObjectId
 
 hero = APIRouter()
@@ -63,3 +63,32 @@ def delete_hero(hero_id: int):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Hero not found")
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    
+
+@hero.get("/genders")
+def find_all_genders():
+    try:
+        genders = gendersEntity(conn.gender.find())
+        return {"data": genders}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    
+
+@hero.get("/publishers")
+def find_all_publishers():
+    try:
+        publishers = publishersEntity(conn.publisher.find())
+        return {"data": publishers}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    
+    
+@hero.get("/alignments")
+def find_all_alignments():
+    try:
+        alignments = alignmentsEntity(conn.alignment.find())
+        return {"data": alignments}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    
+
