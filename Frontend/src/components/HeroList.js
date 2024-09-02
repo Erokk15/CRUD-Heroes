@@ -5,8 +5,17 @@ import { show_alert } from '../functions';
 
 
 const HeroList = () => {
-    const url = 'http://localhost:8000/heroes';
+    const urlHeroes = 'http://localhost:8000/heroes';
+    const urlPublishers = 'http://localhost:8000/publishers';
+    const urlGenders = 'http://localhost:8000/genders';
+    const urlAlignments = 'http://localhost:8000/alignments';
+
+
     const [heroes, setHeroes] = useState([]);
+    const [publishers, setPublishers] = useState([]);
+    const [genders, setGenders] = useState([]);
+    const [alignments, setAlignments] = useState([]);
+
     const [hero_id, setHero_Id] = useState(0);
     const [name, setName] = useState('');
     const [eye_color, setEye_color] = useState('');
@@ -25,27 +34,14 @@ const HeroList = () => {
     const [totalHeroes, setTotalHeroes] = useState(0);
     const heroesPerPage = 10;
 
-    const [selectedPublisher, setSelectedPublisher] = useState('');
-const [selectedRace, setSelectedRace] = useState('');
-const [selectedGender, setSelectedGender] = useState('');
-const [selectedAlignment, setSelectedAlignment] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filters, setFilters] = useState({
+        race: '',
+        publisher_id: '',
+        gender_id: '',
+        alignment_id: ''
+    });
 
-const publishers = [
-    { publisher_id: 1, publisher_name: 'Marvel' },
-    { publisher_id: 2, publisher_name: 'DC' },
-    { publisher_id: 3, publisher_name: 'Image' }
-];
-
-const genders = [
-    { gender_id: 1, gender_name: 'Male' },
-    { gender_id: 2, gender_name: 'Female' }
-];
-
-const alignments = [
-    { alignment_id: 1, alignment_name: 'Good' },
-    { alignment_id: 2, alignment_name: 'Evil' },
-    { alignment_id: 3, alignment_name: 'Neutral' }
-];
 
 const races = [
     'Human',
@@ -58,23 +54,58 @@ const races = [
 
 
     useEffect(() => {
-        const fetchHeroes = async () => {
-            try {
-                const response = await axios.get(url, {
-                    params: {
-                        limit: heroesPerPage,
-                        offset: (currentPage - 1) * heroesPerPage,
-                    },
-                });
-                setHeroes(response.data.data);
-                setTotalHeroes(response.data.total);
-            } catch (error) {
-                console.error('Error fetching heroes:', error);
-            }
-        };
-
         fetchHeroes();
-    }, [currentPage]);
+        fetchPublishers();
+        fetchGenders();
+        fetchAlignments();
+    }, [currentPage, searchTerm, filters]);
+
+
+    const fetchHeroes = async () => {
+        try {
+            const response = await axios.get(urlHeroes, {
+                params: {
+                    limit: heroesPerPage,
+                    offset: (currentPage - 1) * heroesPerPage,
+                    page: currentPage,
+                    search: searchTerm,
+                    ...filters
+                }
+            });
+            setHeroes(response.data.data);
+            setTotalHeroes(response.data.total);
+        } catch (error) {
+            console.error('Error fetching heroes:', error);
+        }
+    };
+
+    const fetchPublishers = async () => {
+        try {
+            const response = await axios.get(urlPublishers);
+            setPublishers(response.data.data);
+        } catch (error) {
+            console.error('Error fetching publishers:', error);
+        }
+    };
+
+    const fetchGenders = async () => {
+        try {
+            const response = await axios.get(urlGenders);
+            setGenders(response.data.data);
+        } catch (error) {
+            console.error('Error fetching genders:', error);
+        }
+    };
+
+    const fetchAlignments = async () => {
+        try {
+            const response = await axios.get(urlAlignments);
+            setAlignments(response.data.data);
+        } catch (error) {
+            console.error('Error fetching alignments:', error);
+        }
+    };
+
 
     const handleEdit = (id) => {
         console.log(id.hero_id);
@@ -112,6 +143,21 @@ const races = [
 
         return pageNumbers;
     };
+
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
+    };
+
+    const handleFilterChange = (e) => {
+        setFilters({
+            ...filters,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const handleApplyFilters = () => {
+        fetchHeroes();
+    };
     
     return (
         <div className='App'>
@@ -120,22 +166,24 @@ const races = [
             <header className="bg-dark text-white py-3">
                     <div className="container-fluid">
                         <div className="row align-items-center">
-                            {/* Título "HEROES" a la Izquierda */}
                             <div className="col-lg-4">
                                 <h1 className="ms-5">HEROES</h1>
                             </div>
-                            {/* Filtros y Barra de Búsqueda a la Derecha */}
+                            {/* Buscador */}
                             <div className="col-lg-8">
                                 <div className="row g-2 justify-content-end">
                                     <div className="col-md-3">
-                                        <input 
-                                            type="text" 
-                                            className="form-control" 
-                                            placeholder="Buscar por nombre" 
+                                        <input
+                                            type="text"
+                                            placeholder="Search..."
+                                            value={searchTerm}
+                                            onChange={handleSearchChange}
                                         />
+                                        <button onClick={handleApplyFilters}>Buscar</button>
                                     </div>
+                                    {/* Filtro Publisher */}
                                     <div className="col-md-2">
-                                        <select className="form-select" value={selectedPublisher} onChange={(e) => setSelectedPublisher(e.target.value)}>
+                                        <select className="form-select" name="publisher_id" value={filters.publisher_id} onChange={handleFilterChange}>
                                             <option value="">Casa Publicadora</option>
                                             {publishers.map((publisher) => (
                                                 <option key={publisher.publisher_id} value={publisher.publisher_id}>
@@ -144,8 +192,9 @@ const races = [
                                             ))}
                                         </select>
                                     </div>
+                                    {/* Filtro Race */}
                                     <div className="col-md-2">
-                                        <select className="form-select" value={selectedRace} onChange={(e) => setSelectedRace(e.target.value)}>
+                                        <select className="form-select" >
                                             <option value="">Raza</option>
                                             {races.map((race) => (
                                                 <option key={race} value={race}>
@@ -154,8 +203,9 @@ const races = [
                                             ))}
                                         </select>
                                     </div>
+                                    {/* Filtro Gender */}
                                     <div className="col-md-2">
-                                        <select className="form-select" value={selectedGender} onChange={(e) => setSelectedGender(e.target.value)}>
+                                        <select className="form-select" name="gender_id" value={filters.gender_id} onChange={handleFilterChange}>
                                             <option value="">Género</option>
                                             {genders.map((gender) => (
                                                 <option key={gender.gender_id} value={gender.gender_id}>
@@ -164,9 +214,10 @@ const races = [
                                             ))}
                                         </select>
                                     </div>
+                                    {/* Filtro Alignment */}
                                     <div className="col-md-2">
-                                        <select className="form-select" value={selectedAlignment} onChange={(e) => setSelectedAlignment(e.target.value)}>
-                                            <option value="">Bando</option>
+                                        <select className="form-select" name="alignment_id" value={filters.alignment_id} onChange={handleFilterChange}>
+                                            <option value="">Alineación</option>
                                             {alignments.map((alignment) => (
                                                 <option key={alignment.alignment_id} value={alignment.alignment_id}>
                                                     {alignment.name}
