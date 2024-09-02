@@ -14,10 +14,11 @@ def find_all_heroes(
     publisher_id: int = Query(None),
     gender_id: int = Query(None),
     alignment_id: int = Query(None),
-    race: str = Query(None) 
+    race: str = Query(None)
 ):
     try:
-        query = {}
+        query = {"hero_id": {"$exists": True, "$ne": None}}  # Añade el filtro para hero_id
+
         if name:
             query["name"] = {"$regex": name, "$options": "i"}
         if publisher_id:
@@ -35,6 +36,7 @@ def find_all_heroes(
         return {"data": heroes, "total": total_count}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
 
 @hero.post("/heroes")
 def create_hero(hero: HeroInformation):
