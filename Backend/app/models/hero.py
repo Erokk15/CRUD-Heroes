@@ -19,7 +19,7 @@ class GenderInformation(BaseModel):
     
 class PublisherInformation(BaseModel):
     publisher_id: int
-    name: str
+    publisher_name: str
     
 class AlignmentInformation(BaseModel):
     alignment_id: int

@@ -28,7 +28,7 @@ def gendersEntity(entity) -> list:
 def publisherEntity(item) -> dict:
     return {
         "publisher_id": item.get("publisher_id", None),
-        "name": item.get("name", "")
+        "publisher_name": item.get("publisher_name", "")
     }
     
 def publishersEntity(entity) -> list:
