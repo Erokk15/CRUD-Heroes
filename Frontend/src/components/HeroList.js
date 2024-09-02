@@ -21,8 +21,8 @@ const HeroList = () => {
     const [eye_color, setEye_color] = useState('');
     const [hair_color, setHair_color] = useState('');
     const [skin_color, setSkin_color] = useState('');
-    const [height, setHeight] = useState(0);
-    const [weight, setWeight] = useState(0);
+    const [height, setHeight] = useState('');
+    const [weight, setWeight] = useState('');
     const [race, setRace] = useState('');
     const [publisher_id, setPublisher_id] = useState(0);
     const [gender_id, setGender_id] = useState(0);
@@ -106,6 +106,49 @@ const races = [
         }
     };
 
+    const openModal = (op, id, name, eye_color, hair_color, skin_color, height, weight, race, publisher, gender, alignment) => {
+        setHero_Id('');
+        setName('');
+        setEye_color('');
+        setHair_color('');
+        setSkin_color('');
+        setHeight('');
+        setWeight('');
+        setRace('');
+        setPublisher_id('');
+        setGender_id('');
+        setAlignment_id('');
+        setOperation(op);
+        if(op === 1){
+            setTitle('Agregar Héroe');
+        }
+        else if(op === 2){
+
+            if(skin_color === null){
+                setSkin_color('N/A');
+            } else setSkin_color(skin_color);
+        
+            if(race === null){
+                setRace('N/A');
+            } else setRace(race);
+            
+
+            setTitle('Editar Héroe');
+            setHero_Id(id);
+            setName(name);
+            setEye_color(eye_color);
+            setHair_color(hair_color);
+            setHeight(height);
+            setWeight(weight);
+            setPublisher_id(publisher);
+            setGender_id(gender);
+            setAlignment_id(alignment);
+        }
+        window.setTimeout(function(){
+            document.getElementById('name').focus();
+        }, 500);
+    }
+
 
     const handleEdit = (id) => {
         console.log(id.hero_id);
@@ -184,7 +227,7 @@ const races = [
                                     {/* Filtro Publisher */}
                                     <div className="col-md-2">
                                         <select className="form-select" name="publisher_id" value={filters.publisher_id} onChange={handleFilterChange}>
-                                            <option value="">Casa Publicadora</option>
+                                            <option value="">Publicadora</option>
                                             {publishers.map((publisher) => (
                                                 <option key={publisher.publisher_id} value={publisher.publisher_id}>
                                                     {publisher.publisher_name}
@@ -236,7 +279,7 @@ const races = [
                 <div className='row mt-3'>
                     <div className='col-md-4 offset-md-4'>
                         <div className='d-grid mx-auto'>
-                            <button className='btn btn-dark' data-bs-toggle='modal' data-bs-target='#modalHeroes'>
+                            <button onClick={()=> openModal(1)} className='btn btn-dark' data-bs-toggle='modal' data-bs-target='#modalHeroes'>
                                 <i className='fa-solid fa-circle-plus'></i> Añadir
                             </button>
                         </div>
@@ -255,12 +298,22 @@ const races = [
                                         <tr key={hero.hero_id}>
                                             <td>{hero.hero_id}</td>
                                             <td>{hero.name}</td>
-                                            <td>{hero.publisher_id}</td>
-                                            <td>{hero.gender_id}</td>
+                                            <td>{publishers.map((publisher, i) => {
+                                                if(publisher.publisher_id === hero.publisher_id){
+                                                    return publisher.publisher_name;
+                                                }
+                                                return null;
+                                            })}</td>
+                                            <td>{genders.map((gender, i) => {
+                                                if(gender.gender_id === hero.gender_id){
+                                                    return gender.name;
+                                                }
+                                                return null;
+                                            })}</td>
                                             <td>{hero.height}</td>
                                             <td>{hero.weight}</td>
                                             <td>
-                                                <button className='btn btn-warning' >
+                                                <button onClick={()=> openModal(2, hero.hero_id, hero.name, hero.eye_color, hero.hair_color, hero.skin_color, hero.weight, hero.height,hero.race,  hero.publisher_id, hero.gender_id, hero.alignment_id)} className='btn btn-warning' data-bs-toggle='modal' data-bs-target='#modalHeroes'>
                                                     <i className='fa-solid fa-pencil'></i>
                                                 </button>
                                                 &nbsp;
@@ -313,38 +366,74 @@ const races = [
                         <div className='modal-body'>
                             <input type='hidden' id='hero_id'></input>
                             <div className='input-group mb-3'>
-                                <span className='input-group-text'><i className='fa-solid fa-gift'></i></span>
-                                <input type='text' id='nombre' className='form-control' placeholder='Nombre' value={name} onChange={(e)=> setName(e.target.value)}></input>
+                                <span className='input-group-text'><i className='fa-solid fa-address-card '></i></span>
+                                <input type='text' id='name' className='form-control' placeholder='Nombre' value={name} onChange={(e)=> setName(e.target.value)}></input>
                             </div>
                             <div className='input-group mb-3'>
-                                <span className='input-group-text'><i className='fa-solid fa-gift'></i></span>
+                                <span className='input-group-text'><i className='fa-solid fa-eye'></i></span>
                                 <input type='text' id='eye_color' className='form-control' placeholder='Color de ojos' value={eye_color} onChange={(e)=> setEye_color(e.target.value)}></input>
                             </div>
                             <div className='input-group mb-3'>
-                                <span className='input-group-text'><i className='fa-solid fa-gift'></i></span>
+                                <span className='input-group-text'><i className='fa-solid fa-paint-brush'></i></span>
                                 <input type='text' id='hair_color' className='form-control' placeholder='Color de pelo' value={hair_color} onChange={(e)=> setHair_color(e.target.value)}></input>
                             </div>
                             <div className='input-group mb-3'>
-                                <span className='input-group-text'><i className='fa-solid fa-gift'></i></span>
+                                <span className='input-group-text'><i className='fa-solid fa-user'></i></span>
                                 <input type='text' id='skin_color' className='form-control' placeholder='Color de piel' value={skin_color} onChange={(e)=> setSkin_color(e.target.value)}></input>
                             </div>
                             <div className='input-group mb-3'>
-                                <span className='input-group-text'><i className='fa-solid fa-gift'></i></span>
-                                <input type='number' id='height' className='form-control' placeholder='Altura' value={height} onChange={(e)=> setHeight(e.target.value)}></input>
+                                <span className='input-group-text'><i className='fa-solid fa-level-up'></i></span>
+                                <input type='text' id='height' className='form-control' placeholder='Altura' value={height} onChange={(e)=> setHeight(e.target.value)}></input>
                             </div>
                             <div className='input-group mb-3'>
-                                <span className='input-group-text'><i className='fa-solid fa-gift'></i></span>
-                                <input type='number' id='weight' className='form-control' placeholder='Peso' value={weight} onChange={(e)=> setWeight(e.target.value)}></input>
+                                <span className='input-group-text'><i className='fa-solid fa-cutlery'></i></span>
+                                <input type='text' id='weight' className='form-control' placeholder='Peso' value={weight} onChange={(e)=> setWeight(e.target.value)}></input>
                             </div>
                             <div className='input-group mb-3'>
-                                <span className='input-group-text'><i className='fa-solid fa-gift'></i></span>
+                                <span className='input-group-text'><i className='fa-solid fa-rocket'></i></span>
                                 <input type='text' id='race' className='form-control' placeholder='Raza' value={race} onChange={(e)=> setRace(e.target.value)}></input>
                             </div>
                             <div className='input-group mb-3'>
                                 <span className='input-group-text'><i className='fa-solid fa-gift'></i></span>
-                                <input type='select' id='publisher_id' className='form-control' value={hair_color} onChange={(e)=> setHair_color(e.target.value)}></input>
+                                <select className="form-select" name="publisher_id" id="publisher_id" value={publisher_id} onChange={(e)=> setPublisher_id(e.target.value)}>
+                                                <option value="">Casa Publicadora</option>
+                                                {publishers.map((publisher) => (
+                                                    <option key={publisher.publisher_id} value={publisher.publisher_id} >
+                                                        {publisher.publisher_name}
+                                                    </option>
+                                                ))}
+                                </select>
                             </div>
-                            
+                            <div className='input-group mb-3'>
+                                <span className='input-group-text'><i className='fa-solid fa-gift'></i></span>
+                                <select className="form-select" name="gender_id" id="gender_id" value={gender_id} onChange={(e)=> setGender_id(e.target.value)}>
+                                            <option value="">Género</option>
+                                            {genders.map((gender) => (
+                                                <option key={gender.gender_id} value={gender.gender_id}>
+                                                    {gender.name}
+                                                </option>
+                                            ))}
+                                </select>
+                            </div>
+                            <div className='input-group mb-3'>
+                                <span className='input-group-text'><i className='fa-solid fa-gift'></i></span>
+                                <select className="form-select" name="alignment_id" id="alignment_id" value={alignment_id} onChange={(e)=> setAlignment_id(e.target.value)}>
+                                            <option value="">Alineación</option>
+                                            {alignments.map((alignment) => (
+                                                <option key={alignment.alignment_id} value={alignment.alignment_id}>
+                                                    {alignment.name}
+                                                </option>
+                                            ))}
+                                </select>
+                            </div>
+                            <div className='d-grid col-6 mx-auto'>
+                                <button className='btn btn-success'>
+                                    <i className='fa-solid fa-floppy-disk'></i> Guardar
+                                </button>
+                            </div>
+                            <div className='modal-footer'>
+                                <button type='button' className='btn btn-secondary' data-bs-dismiss='modal'>Cerrar</button>
+                            </div>
                         </div>
                     </div>
                 </div>
