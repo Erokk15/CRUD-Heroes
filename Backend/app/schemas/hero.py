@@ -15,3 +15,30 @@ def heroEntity(item) -> dict:
 
 def heroesEntity(entity) -> list:
     return [heroEntity(item) for item in entity]
+
+def genderEntity(item) -> dict:
+    return {
+        "gender_id": item.get("gender_id", None),
+        "name": item.get("name", "")
+    }
+
+def gendersEntity(entity) -> list:
+    return [genderEntity(item) for item in entity]
+
+def publisherEntity(item) -> dict:
+    return {
+        "publisher_id": item.get("publisher_id", None),
+        "name": item.get("name", "")
+    }
+    
+def publishersEntity(entity) -> list:
+    return [publisherEntity(item) for item in entity]
+
+def alignmentEntity(item) -> dict:
+    return {
+        "alignment_id": item.get("alignment_id", None),
+        "name": item.get("name", "")
+    }
+    
+def alignmentsEntity(entity) -> list:
+    return [alignmentEntity(item) for item in entity]
