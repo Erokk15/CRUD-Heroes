@@ -134,7 +134,7 @@ const HeroList = () => {
     };
 
     const openModal = async(op, id = '', name = '', eye_color = '', hair_color = '', skin_color = '', height = '', weight = '', race = '', publisher = '', gender = '', alignment = '') => {
-        if (op === 1) { // Add hero operation
+        if (op === 1) { 
             const newHeroId = await generateUniqueHeroId();
             setHero_Id(newHeroId);
         } else {
@@ -194,7 +194,7 @@ const HeroList = () => {
         enviarSolicitud(parametros, hero_id, metodo);
     };
     
-    const enviarSolicitud = async (heroData, heroId, metodo) => {
+    const enviarSolicitud = async (heroData, heroId, metodo, successMessage) => {
         try {
             const url = metodo === 'POST' ? `http://localhost:8000/heroes` : `http://localhost:8000/heroes/${heroId}`;
             const response = await axios({
@@ -203,15 +203,15 @@ const HeroList = () => {
                 data: heroData
             });
             console.log('Héroe guardado:', response.data);
-
+    
             Swal.fire({
                 icon: 'success',
-                title: metodo === 'POST' ? 'Héroe agregado con éxito' : 'Héroe actualizado con éxito',
+                title: metodo === 'POST' ? 'Héroe agregado con éxito' : (metodo === 'DELETE' ? successMessage : 'Héroe actualizado con éxito'),
                 showConfirmButton: true,
             }).then(() => {
                 document.getElementById('btnCerrar').click();
             });
-
+    
             fetchHeroes();
         } catch (error) {
             if (error.response) {
@@ -219,10 +219,8 @@ const HeroList = () => {
                 show_alert(`Error: ${error.response.data.detail}`, 'error');
             } else if (error.request) {
                 console.error('No response received:', error.request);
-                show_alert('No se recibió respuesta del servidor', 'error');
             } else {
-                console.error('Error setting up request:', error.message);
-                show_alert(`Error en la configuración de la solicitud: ${error.message}`, 'error');
+                console.error('Error', error.message);
             }
         }
     }
@@ -231,22 +229,19 @@ const HeroList = () => {
         const Myswal = withReactContent(Swal);
         
         Myswal.fire({
-            title: '¿Estás seguro de eliminar a '+name+'?',
+            title: '¿Estás seguro de eliminar a ' + name + '?',
             icon: 'question', text: 'No podrás revertir esta acción',
             showCancelButton: true, confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar'
         }).then((result) => {
             if(result.isConfirmed){
                 setHero_Id(hero_id);
-                enviarSolicitud({}, hero_id, 'DELETE');
-
+                enviarSolicitud({}, hero_id, 'DELETE', 'Héroe eliminado con éxito');
             }
             else {
                 show_alert('Operación cancelada', 'info');
             }
         })
-
-    }
-    
+    };
 
     const totalPages = Math.ceil(totalHeroes / heroesPerPage);
 
@@ -289,9 +284,9 @@ const HeroList = () => {
                             <div className="col-lg-4">
                                 <h1 className="ms-5">HEROES</h1>
                             </div>
-                            {/* Buscador */}
                             <div className="col-lg-8">
                                 <div className="row g-2 justify-content-end">
+                                    {/* Buscador */}
                                     <div className="col-md-3">
                                         <div className="input-group">
                                             <input
