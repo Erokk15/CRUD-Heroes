@@ -17,7 +17,7 @@ def find_all_heroes(
     race: str = Query(None)
 ):
     try:
-        query = {"hero_id": {"$exists": True, "$ne": None}}  # Añade el filtro para hero_id
+        query = {"hero_id": {"$exists": True, "$ne": None}} 
 
         if name:
             query["name"] = {"$regex": name, "$options": "i"}
@@ -30,7 +30,6 @@ def find_all_heroes(
         if race:
             query["race"] = race
 
-        # Ordenar los héroes por `hero_id` en orden ascendente
         heroes = heroesEntity(conn.hero_information.find(query).sort("hero_id", 1).skip(offset).limit(limit))
         total_count = conn.hero_information.count_documents(query)
         return {"data": heroes, "total": total_count}
